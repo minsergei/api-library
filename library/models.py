@@ -23,7 +23,7 @@ class Book(models.Model):
         "Author",
         on_delete=models.SET_NULL,
         **NULLABLE,
-        verbose_name="Владелец",
+        verbose_name="Автор книги",
     )
     GENRE_FANTASY = "fantasy"
     GENRE_NOVEL = "novel"
@@ -80,17 +80,33 @@ class IssuanceBook(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Пользователь"
     )
     book = models.ForeignKey(Book, on_delete=models.CASCADE, verbose_name="Книга")
-    date = models.DateField(
+    date_get = models.DateField(
         auto_now_add=True,
-        null=True,
-        blank=True,
-        verbose_name="Дата выхода книги",
+        verbose_name="Дата выдача книги",
+        help_text="Формат DD.MM.YYYY",
+    )
+
+
+class StatisticIssuanceBook(models.Model):
+    user = models.EmailField(verbose_name="email")
+    book = models.CharField(
+        max_length=150,
+        verbose_name="название книги",
+        help_text="Укажите название книги",
+    )
+    date_get = models.DateField(
+        verbose_name="Дата выдача книги",
+        help_text="Формат DD.MM.YYYY",
+    )
+    date_return = models.DateField(
+        auto_now_add=True,
+        verbose_name="Дата возврата книги",
         help_text="Формат DD.MM.YYYY",
     )
 
     def __str__(self):
-        return f"Книга {self.book.title} выдана пользователю {self.user.email}"
+        return f"Книга {self.book} выдана пользователю {self.user}"
 
     class Meta:
-        verbose_name = "выданная книга"
-        verbose_name_plural = "выданные книги"
+        verbose_name = "статистика книг"
+        verbose_name_plural = "статистика книг"

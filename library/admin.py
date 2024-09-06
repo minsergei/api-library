@@ -14,4 +14,4 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(IssuanceBook)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "book", "date")
+    list_display = ("id", "user", "book", "date_get",)
