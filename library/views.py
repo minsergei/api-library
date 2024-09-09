@@ -1,6 +1,7 @@
 from django.db.models import Count
 from django.shortcuts import render
 from rest_framework import viewsets, generics, status
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -32,9 +33,21 @@ class BookCreateAPIView(generics.CreateAPIView):
 
 
 class BookListAPIView(generics.ListAPIView):
+    """Все книги библиотеки"""
     serializer_class = BookSerializer
     queryset = Book.objects.all()
     pagination_class = ResultsSetPagination
+    filter_backends = [SearchFilter,]
+    search_fields = ['title', 'genre', 'author__fio']
+
+
+class BookListAPIViewActive(generics.ListAPIView):
+    """Список книг в наличии"""
+    serializer_class = BookSerializer
+    queryset = Book.objects.filter(is_availability=True)
+    pagination_class = ResultsSetPagination
+    filter_backends = [SearchFilter,]
+    search_fields = ['title', 'genre', 'author__fio']
 
 
 class BookRetrieveAPIView(generics.RetrieveAPIView):
@@ -67,14 +80,14 @@ class IssuanceBookCreateAPIView(APIView):
         subs_item, created = IssuanceBook.objects.get_or_create(user=user, book=book_item)
 
         if created:
-            message = f'Вы выдали книгу {book.title} читателю {user.email}'
+            message = f'Вам выдали книгу {book.title}, читателю {user.email}'
             status_code = status.HTTP_201_CREATED
             book.is_availability = False
             book.save(update_fields=["is_availability"])
         else:
             StatisticIssuanceBook.objects.create(user=user, book=book_item, date_get=subs_item.date_get)
             subs_item.delete()
-            message = f'Вам вернули книгу {book.title} читатель {user.email}'
+            message = f'Вы вернули книгу {book.title}, читатель {user.email}'
             status_code = status.HTTP_204_NO_CONTENT
             book.is_availability = True
             book.save(update_fields=["is_availability"])
@@ -88,7 +101,7 @@ class IssuanceBookListAPIView(generics.ListAPIView):
 
 class StatisticIssuanceBookListAPIView(generics.ListAPIView):
     """
-    эндпоинт для вывода статистики по книгам, которые чаще брали
+    Представления для вывода статистики по книгам, которые чаще брали
     """
     serializer_class = StatisticIssuanceBookSerializer
     queryset = StatisticIssuanceBook.objects.values("book").annotate(total=Count("id")).order_by("-total")
