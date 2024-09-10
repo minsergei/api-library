@@ -67,36 +67,55 @@ class BookDestroyAPIView(generics.DestroyAPIView):
 
 
 class IssuanceBookCreateAPIView(APIView):
-    permission_classes = (IsManager,)
+    permission_classes = (IsAuthenticated,)
     queryset = [IssuanceBook.objects.all(), Book.objects.all()]
     serializer_class = IssuanceBookSerializer
 
     def post(self, *args, **kwargs):
-        """Метод создания записи о выдаче книг, обновляет данные о наличии книги, создает запись в таблице статистики"""
+        """
+        Метод создания записи о выдаче книг, обновляет данные о наличии книги, создает запись в таблице статистики.
+        Если книга выдана, то выведется сообщение, что книга у другого пользователя.
+        """
         user = self.request.user
         book_id = self.request.data.get("book")
         book_item = get_object_or_404(Book, pk=book_id)
         book = Book.objects.get(id=book_id)
-        subs_item, created = IssuanceBook.objects.get_or_create(user=user, book=book_item)
-
-        if created:
+        issuance = IssuanceBook.objects.filter(book=book_id)
+        if issuance.count() == 1:
+            if user != issuance[0].user:
+                message = f'В данный момент книга {book.title} на руках'
+                status_code = status.HTTP_204_NO_CONTENT
+                return Response({"message": message}, status=status_code)
+            else:
+                subs_item, created = IssuanceBook.objects.get_or_create(user=user, book=book_item)
+                if created:
+                    message = f'Вам выдали книгу {book.title}, читателю {user.email}'
+                    status_code = status.HTTP_201_CREATED
+                    book.is_availability = False
+                    book.save(update_fields=["is_availability"])
+                else:
+                    StatisticIssuanceBook.objects.create(user=user, book=book_item, date_get=subs_item.date_get)
+                    subs_item.delete()
+                    message = f'Вы вернули книгу {book.title}, читатель {user.email}'
+                    status_code = status.HTTP_204_NO_CONTENT
+                    book.is_availability = True
+                    book.save(update_fields=["is_availability"])
+                return Response({"message": message}, status=status_code)
+        else:
+            IssuanceBook.objects.create(user=user, book=book_item)
             message = f'Вам выдали книгу {book.title}, читателю {user.email}'
             status_code = status.HTTP_201_CREATED
             book.is_availability = False
             book.save(update_fields=["is_availability"])
-        else:
-            StatisticIssuanceBook.objects.create(user=user, book=book_item, date_get=subs_item.date_get)
-            subs_item.delete()
-            message = f'Вы вернули книгу {book.title}, читатель {user.email}'
-            status_code = status.HTTP_204_NO_CONTENT
-            book.is_availability = True
-            book.save(update_fields=["is_availability"])
-        return Response({"message": message}, status=status_code)
-
+            return Response({"message": message}, status=status_code)
 
 class IssuanceBookListAPIView(generics.ListAPIView):
+    """
+    Представления для вывода книг, которые выданы пользователям
+    """
     serializer_class = IssuanceBookSerializer
     queryset = IssuanceBook.objects.all()
+    permission_classes = (IsManager,)
 
 
 class StatisticIssuanceBookListAPIView(generics.ListAPIView):
@@ -105,3 +124,4 @@ class StatisticIssuanceBookListAPIView(generics.ListAPIView):
     """
     serializer_class = StatisticIssuanceBookSerializer
     queryset = StatisticIssuanceBook.objects.values("book").annotate(total=Count("id")).order_by("-total")
+    permission_classes = (IsManager,)
