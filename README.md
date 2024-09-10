@@ -48,6 +48,11 @@ docker-compose up --build
 
 Откройте браузер и перейдите по адресу http://localhost:8000 для доступа к проекту.
 
+Добавьте в проект группу модераторы командой "python manage.py loaddata groups.json" и добавьте в эту группу пользователя.
+Создайте суперпользователя:
+python manage.py super
+* email: admin
+* password: 123
 
 ### Документация API:
 
