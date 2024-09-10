@@ -1,12 +1,11 @@
 from django.db.models import Count
-from django.shortcuts import render
+
 from rest_framework import viewsets, generics, status
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
-import datetime
 
 from library.models import Author, Book, IssuanceBook, StatisticIssuanceBook
 from library.paginators import ResultsSetPagination
@@ -75,6 +74,7 @@ class IssuanceBookCreateAPIView(APIView):
         """
         Метод создания записи о выдаче книг, обновляет данные о наличии книги, создает запись в таблице статистики.
         Если книга выдана, то выведется сообщение, что книга у другого пользователя.
+        Для запроса необходимо указать ID книги из списка книг в наличии.
         """
         user = self.request.user
         book_id = self.request.data.get("book")
@@ -108,6 +108,7 @@ class IssuanceBookCreateAPIView(APIView):
             book.is_availability = False
             book.save(update_fields=["is_availability"])
             return Response({"message": message}, status=status_code)
+
 
 class IssuanceBookListAPIView(generics.ListAPIView):
     """
