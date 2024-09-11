@@ -55,8 +55,8 @@ docker-compose up --build
 * python manage.py super
 
 Данные суперпользователя:
-* email: admin
-* password: 123
+* email: admin@admin.ru
+* password: 123qwe
 
 ### Документация API:
 
