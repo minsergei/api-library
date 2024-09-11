@@ -27,6 +27,7 @@ class AuthorViewSet(viewsets.ModelViewSet):
 
 
 class BookCreateAPIView(generics.CreateAPIView):
+    """Добавление книги в библиотеку"""
     serializer_class = BookSerializer
     permission_classes = (IsManager,)
 
@@ -50,17 +51,20 @@ class BookListAPIViewActive(generics.ListAPIView):
 
 
 class BookRetrieveAPIView(generics.RetrieveAPIView):
+    """Просмотр информации о книге"""
     serializer_class = BookSerializer
     queryset = Book.objects.all()
 
 
 class BookUpdateAPIView(generics.UpdateAPIView):
+    """Обновлении информации о книге"""
     serializer_class = BookSerializer
     queryset = Book.objects.all()
     permission_classes = (IsManager,)
 
 
 class BookDestroyAPIView(generics.DestroyAPIView):
+    """Удаление книги"""
     queryset = Book.objects.all()
     permission_classes = (IsManager,)
 

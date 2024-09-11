@@ -12,7 +12,7 @@ def send_email():
     """функция отправки писем пользователям о возврате книги"""
     books = IssuanceBook.objects.all()
     for item in books:
-        print(datetime.datetime.now().date())
+
         if item.date_get + timedelta(days=13) == datetime.datetime.now().date():
             date = item.date_get+timedelta(days=14)
             send_mail(
