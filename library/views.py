@@ -31,7 +31,6 @@ class BookCreateAPIView(generics.CreateAPIView):
     serializer_class = BookSerializer
     permission_classes = (IsManager,)
 
-
 class BookListAPIView(generics.ListAPIView):
     """Все книги библиотеки"""
     serializer_class = BookSerializer

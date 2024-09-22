@@ -86,6 +86,13 @@ class IssuanceBook(models.Model):
         help_text="Формат DD.MM.YYYY",
     )
 
+    def __str__(self):
+        return f"Книга {self.book} выдана пользователю {self.user}"
+
+    class Meta:
+        verbose_name = "Выданная книга"
+        verbose_name_plural = "Выданные книги"
+
 
 class StatisticIssuanceBook(models.Model):
     user = models.EmailField(verbose_name="email")
